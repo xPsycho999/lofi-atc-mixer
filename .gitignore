@@ -1,14 +1,19 @@
-*.tar
-*.tar.*
-*.jar
-*.exe
-*.msi
-*.deb
-*.zip
-*.tgz
-*.log
-*.log.*
-*.sig
-
+# Arch Linux Packaging
 pkg/
 src/
+*.tar.zst
+*.tar.xz
+*.tar.gz
+
+# Temp & Logs
+*.log
+*.log.*
+/tmp/lofi-*
+
+# Archives
+*.zip
+*.tgz
+*.tar
+
+# OS generated files
+.DS_Store
