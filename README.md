@@ -14,3 +14,10 @@ Das Skript nutzt leichtgewichtige CLI-Tools. Stelle sicher, dass folgende Pakete
 Auf **Arch Linux / CachyOS**:
 ```bash
 sudo pacman -S mpv yt-dlp fzf socat cava
+```
+## 🚀 Installation & Nutzung
+```
+git clone [https://github.com/DEIN-GITHUB-NAME/lofi-atc-mixer.git](https://github.com/DEIN-GITHUB-NAME/lofi-atc-mixer.git)
+cd lofi-atc-mixer
+chmod +x lofi-atc.sh
+./lofi-atc.sh
