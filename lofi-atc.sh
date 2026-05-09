@@ -2,26 +2,27 @@
 
 # Prüfen ob socat installiert ist
 if ! command -v socat &> /dev/null; then
-    echo "❌ Fehler: 'socat' fehlt. Bitte mit 'sudo pacman -S socat' installieren."
+    echo "❌ Error / Fehler: 'socat' fehlt. Bitte mit 'sudo pacman -S socat' installieren."
     exit 1
 fi
 
 # ==========================================
-# STREAM DATENBANK
+# SPRACHAUSWAHL (Language Selection)
 # ==========================================
-declare -A MUSIC_STREAMS=(
-    ["🎧 Lofi Girl (Klassiker)"]="https://www.youtube.com/watch?v=jfKfPfyJRdk"
-    ["🌃 Synthwave / Retrowave"]="https://www.youtube.com/watch?v=4xDzrJKXOOY"
-    ["🎷 Chillhop Radio"]="https://www.youtube.com/watch?v=5yx6BWlEVcY"
-    ["☕ Jazz / Bossa Nova"]="https://www.youtube.com/watch?v=HuFYqnbVbzY"
+declare -A LANGS=(
+    ["🇩🇪 Deutsch"]="de"
+    ["🇬🇧 English"]="en"
 )
 
-declare -A AMBIENCE_STREAMS=(
-    ["🚫 Keine (Stumm)"]="NONE"
-    ["🌧️ Sanfter Regen"]="https://www.youtube.com/watch?v=PhDPj2sfKm0"
-    ["✈️ Flugzeug Kabine"]="https://www.youtube.com/watch?v=co7KgV2edGk"
-)
+LANG_MENU=$(printf "%s\n" "${!LANGS[@]}" | sort -r | fzf --prompt="🌐 Select Language / Sprache wählen (ESC to exit): " --border=rounded --height=20% --color=bg+:#2e3440,fg+:#d8dee9,hl+:#88c0d0,prompt:#b48ead,pointer:#bf616a)
+[[ -z "$LANG_MENU" ]] && exit 0
+LANG_SEL="${LANGS[$LANG_MENU]}"
 
+# ==========================================
+# ÜBERSETZUNGEN (Translations)
+# ==========================================
+declare -A MUSIC_STREAMS
+declare -A AMBIENCE_STREAMS
 declare -A ATC_STREAMS=(
     ["🇺🇸 Los Angeles (LAX Tower)"]="http://d.liveatc.net/klax_twr"
     ["🇺🇸 New York (JFK Tower)"]="http://d.liveatc.net/kjfk_twr"
@@ -32,6 +33,68 @@ declare -A ATC_STREAMS=(
     ["🇦🇺 Sydney (SYD Tower)"]="http://d.liveatc.net/yssy_twr"
     ["🇮🇪 Dublin (DUB Tower)"]="http://d.liveatc.net/eidw_twr"
 )
+
+if [ "$LANG_SEL" == "de" ]; then
+    # Deutsche UI-Texte
+    T_PR_MUSIC="🎵 Wähle deinen Vibe (ESC zum Beenden): "
+    T_PR_AMB="🌧️ Wähle deine Ambience (ESC zum Beenden): "
+    T_PR_ATC="✈️  Wähle deinen Tower (ESC zum Beenden): "
+    T_CTRL_TITLE="STEUERUNG:"
+    T_CTRL_MUSIC="Musik lauter/leiser"
+    T_CTRL_AMB="Ambience lauter/leiser"
+    T_CTRL_ATC="ATC lauter/leiser"
+    T_CTRL_VHF="Musik-VHF-Filter (Radio-Effekt) an/aus"
+    T_CTRL_MUTE="ATC stumm schalten (Mute)"
+    T_CTRL_QUIT="Zurück zum Menü"
+    T_STAT_MUS="Musik"
+    T_STAT_ATC="ATC"
+    T_VIS_START="(Visualizer startet...)"
+    T_VIS_NONE="(cava nicht installiert)"
+    T_BYE="\n👋 Ciao! Guten Flug!"
+    T_PENDING="[Warten auf Auswahl...]"
+
+    MUSIC_STREAMS=(
+        ["🎧 Lofi Girl (Klassiker)"]="https://www.youtube.com/watch?v=jfKfPfyJRdk"
+        ["🌃 Synthwave / Retrowave"]="https://www.youtube.com/watch?v=4xDzrJKXOOY"
+        ["🎷 Chillhop Radio"]="https://www.youtube.com/watch?v=5yx6BWlEVcY"
+        ["☕ Jazz / Bossa Nova"]="https://www.youtube.com/watch?v=HuFYqnbVbzY"
+    )
+    AMBIENCE_STREAMS=(
+        ["🚫 Keine (Stumm)"]="NONE"
+        ["🌧️ Sanfter Regen"]="https://www.youtube.com/watch?v=PhDPj2sfKm0"
+        ["✈️ Flugzeug Kabine"]="https://www.youtube.com/watch?v=co7KgV2edGk"
+    )
+else
+    # English UI Texts
+    T_PR_MUSIC="🎵 Choose your Vibe (ESC to exit): "
+    T_PR_AMB="🌧️ Choose your Ambience (ESC to exit): "
+    T_PR_ATC="✈️  Choose your Tower (ESC to exit): "
+    T_CTRL_TITLE="CONTROLS:"
+    T_CTRL_MUSIC="Music Volume Up/Down"
+    T_CTRL_AMB="Ambience Volume Up/Down"
+    T_CTRL_ATC="ATC Volume Up/Down"
+    T_CTRL_VHF="Toggle Music VHF Filter (Radio Effect)"
+    T_CTRL_MUTE="Mute/Unmute ATC"
+    T_CTRL_QUIT="Return to Menu"
+    T_STAT_MUS="Music"
+    T_STAT_ATC="ATC"
+    T_VIS_START="(Visualizer starting...)"
+    T_VIS_NONE="(cava not installed)"
+    T_BYE="\n👋 Bye! Have a safe flight!"
+    T_PENDING="[Waiting for selection...]"
+
+    MUSIC_STREAMS=(
+        ["🎧 Lofi Girl (Classic)"]="https://www.youtube.com/watch?v=jfKfPfyJRdk"
+        ["🌃 Synthwave / Retrowave"]="https://www.youtube.com/watch?v=4xDzrJKXOOY"
+        ["🎷 Chillhop Radio"]="https://www.youtube.com/watch?v=5yx6BWlEVcY"
+        ["☕ Jazz / Bossa Nova"]="https://www.youtube.com/watch?v=HuFYqnbVbzY"
+    )
+    AMBIENCE_STREAMS=(
+        ["🚫 None (Mute)"]="NONE"
+        ["🌧️ Soft Rain"]="https://www.youtube.com/watch?v=PhDPj2sfKm0"
+        ["✈️ Airplane Cabin"]="https://www.youtube.com/watch?v=co7KgV2edGk"
+    )
+fi
 
 # ==========================================
 # SYSTEM SETUP & FUNKTIONEN
@@ -60,23 +123,41 @@ cleanup_streams() {
     rm -f "$SOCK_MUSIC" "$SOCK_AMB" "$SOCK_ATC" "$FIFO_CAVA" "$FILE_CAVA" "$CONF_CAVA" "$FILE_STATUS"
 }
 
-trap 'cleanup_streams; clear; echo -e "\n👋 Ciao! Guten Flug!"; exit' EXIT
+trap "cleanup_streams; clear; echo -e \"\$T_BYE\"; exit" EXIT
 
-# Diese Funktion wird nur vom Hintergrund-Worker gerufen (verhindert Lag!)
+# Dynamischer Header Renderer
+print_header() {
+    clear
+    echo -e "${C_SEC}           __|__${C_RST}"
+    echo -e "${C_MAIN}  --@--@--(_)--@--@--${C_RST}"
+    echo -e "${C_MAIN}======================================${C_RST}"
+    echo -e " 🎵 ${C_SEC}${1}${C_RST}"
+    echo -e " 🌧️ ${C_SEC}${2}${C_RST}"
+    echo -e " ✈️  ${C_SEC}${3}${C_RST}"
+    echo -e "${C_MAIN}======================================${C_RST}"
+}
+
+# Diese Funktion überprüft asynchron die Verbindung (Live/Buffering/Offline)
 get_status_raw() {
     local sock="$1"
+    # Wenn der Socket nicht existiert, ist MPV gecrasht (z.B. durch totalen Verbindungsabbruch)
     if [[ ! -S "$sock" ]]; then
         echo -en "\e[1;31m[FAIL]\e[0m"
         return
     fi
+    # Frage die Player-Idle-Eigenschaft ab. Timeout verhindert Freezes.
     local res
     res=$(timeout 0.2 socat - "$sock" <<< '{ "command": ["get_property", "core-idle"] }' 2>/dev/null)
+
+    # Wenn keine Antwort kommt, hängt der Socket -> Fehler
     if [[ -z "$res" ]]; then
         echo -en "\e[1;31m[FAIL]\e[0m"
+    # Wenn "data":false, ist der Player nicht idle -> er spielt aktiv
     elif [[ "$res" == *'"data":false'* ]]; then
         echo -en "\e[1;32m[LIVE]\e[0m"
+    # Ansonsten idlet der Player -> er lädt nach (Buffering durch Verbindungsabbruch/Latenz)
     else
-        echo -en "\e[1;33m[LOAD_SPIN]\e[0m" # Platzhalter für den schnellen UI-Spinner
+        echo -en "\e[1;33m[LOAD_SPIN]\e[0m"
     fi
 }
 
@@ -85,7 +166,6 @@ draw_ui() {
     local spin_idx=$(( (LOOP_COUNT / 4) % 4 ))
     local spin_char="${SPIN_CHARS[$spin_idx]}"
 
-    # Status aus der Temp-Datei laden (Blockiert nicht = ultra flüssig!)
     local stat_music="\e[1;33m[LOAD_SPIN]\e[0m"
     local stat_atc="\e[1;33m[LOAD_SPIN]\e[0m"
     local stat_amb="\e[1;33m[LOAD_SPIN]\e[0m"
@@ -93,34 +173,29 @@ draw_ui() {
         source "$FILE_STATUS" 2>/dev/null
     fi
 
-    # Platzhalter mit animiertem Spinner ersetzen
     stat_music="${STAT_MUSIC//LOAD_SPIN/LOAD $spin_char}"
     stat_atc="${STAT_ATC//LOAD_SPIN/LOAD $spin_char}"
     stat_amb="${STAT_AMB//LOAD_SPIN/LOAD $spin_char}"
 
-    # Cava Visualizer auslesen und umwandeln
-    local vis_str="   (Visualizer startet...)"
+    local vis_str="   $T_VIS_START"
     if [[ -n "$PID_CAVA" && -f "$FILE_CAVA" ]]; then
         local raw_data=$(< "$FILE_CAVA")
         IFS=';' read -ra bars <<< "$raw_data"
         vis_str=""
-        # Präzise Unicode Blöcke (0 bis 7)
         local chars=(' ' '▂' '▃' '▄' '▅' '▆' '▇' '█')
         for b in "${bars[@]}"; do
             [[ "$b" =~ ^[0-7]$ ]] && vis_str+="${chars[$b]}"
         done
         vis_str=$(printf "%-36s" "$vis_str")
     elif ! command -v cava &> /dev/null; then
-        vis_str="   (cava nicht installiert)"
+        vis_str="   $T_VIS_NONE"
     fi
 
-    # ATC String (Check auf Mute)
     local atc_str="${VOL_ATC}%"
     if [ "$MUTE_ATC" -eq 1 ]; then
         atc_str="\e[1;31m[MUTED]\e[0m"
     fi
 
-    # Musik Filter String
     local filter_str=""
     if [ "$FILTER_ON" -eq 1 ]; then
         filter_str=" \e[1;33m[VHF]\e[0m"
@@ -134,21 +209,26 @@ draw_ui() {
         amb_vol_str="---%"
     fi
 
-    # UI Zeichnen (1 Zeile hoch, Visualizer schreiben, dann Status schreiben)
-    printf "\r\e[1A\e[K %b %s \e[0m\n\e[K${C_MAIN}>> Status:\e[0m  🎵 Musik: \e[1;32m%3d%%\e[0m %b%b  |  🌧️ Ambience: \e[1;34m%s\e[0m %b  |  ✈️ ATC: \e[1;32m%-15b\e[0m %b" \
-        "${C_SEC}" "$vis_str" "$VOL_MUSIC" "$stat_music" "$filter_str" "$amb_vol_str" "$stat_amb" "$atc_str" "$stat_atc"
+    printf "\r\e[1A\e[K %b %s \e[0m\n\e[K${C_MAIN}>> Status:\e[0m  🎵 %s: \e[1;32m%3d%%\e[0m %b%b  |  🌧️ Ambience: \e[1;34m%s\e[0m %b  |  ✈️ %s: \e[1;32m%-15b\e[0m %b" \
+        "${C_SEC}" "$vis_str" "$T_STAT_MUS" "$VOL_MUSIC" "$stat_music" "$filter_str" "$amb_vol_str" "$stat_amb" "$T_STAT_ATC" "$atc_str" "$stat_atc"
 }
 
 # ==========================================
 # HAUPTSCHLEIFE (Main Loop)
 # ==========================================
 while true; do
+    # Default Farben für das Menü (Bevor Musik gewählt wird)
+    C_MAIN="\e[1;36m"
+    C_SEC="\e[1;35m"
+    C_RST="\e[0m"
+
     # 1. Auswahl Musik
-    MUSIC_CHOICE=$(printf "%s\n" "${!MUSIC_STREAMS[@]}" | sort | fzf --prompt="🎵 Wähle deinen Vibe (ESC zum Beenden): " --border=rounded --height=30% --color=bg+:#2e3440,fg+:#d8dee9,hl+:#88c0d0,prompt:#b48ead,pointer:#bf616a)
+    print_header "$T_PENDING" "$T_PENDING" "$T_PENDING"
+    MUSIC_CHOICE=$(printf "%s\n" "${!MUSIC_STREAMS[@]}" | sort | fzf --prompt="$T_PR_MUSIC" --border=rounded --height=40% --color=bg+:#2e3440,fg+:#d8dee9,hl+:#88c0d0,prompt:#b48ead,pointer:#bf616a)
     [[ -z "$MUSIC_CHOICE" ]] && break
     MUSIC_URL="${MUSIC_STREAMS[$MUSIC_CHOICE]}"
 
-    # Dynamische Farbpalette
+    # Dynamische Farbpalette aktualisieren
     case "$MUSIC_CHOICE" in
         *"Synthwave"*)
             C_MAIN="\e[38;5;201m" # Neon Pink
@@ -166,20 +246,17 @@ while true; do
             C_MAIN="\e[38;5;137m" # Brown
             C_SEC="\e[38;5;178m"  # Gold
             ;;
-        *)
-            C_MAIN="\e[1;36m"
-            C_SEC="\e[1;35m"
-            ;;
     esac
-    C_RST="\e[0m"
 
     # 2. Auswahl Ambience
-    AMB_CHOICE=$(printf "%s\n" "${!AMBIENCE_STREAMS[@]}" | sort | fzf --prompt="🌧️ Wähle deine Ambience (ESC zum Beenden): " --border=rounded --height=30% --color=bg+:#2e3440,fg+:#d8dee9,hl+:#81a1c1,prompt:#81a1c1,pointer:#bf616a)
+    print_header "$MUSIC_CHOICE" "$T_PENDING" "$T_PENDING"
+    AMB_CHOICE=$(printf "%s\n" "${!AMBIENCE_STREAMS[@]}" | sort | fzf --prompt="$T_PR_AMB" --border=rounded --height=40% --color=bg+:#2e3440,fg+:#d8dee9,hl+:#81a1c1,prompt:#81a1c1,pointer:#bf616a)
     [[ -z "$AMB_CHOICE" ]] && break
     AMB_URL="${AMBIENCE_STREAMS[$AMB_CHOICE]}"
 
     # 3. Auswahl ATC
-    ATC_CHOICE=$(printf "%s\n" "${!ATC_STREAMS[@]}" | sort | fzf --prompt="✈️  Wähle deinen Tower (ESC zum Beenden): " --border=rounded --height=40% --color=bg+:#2e3440,fg+:#d8dee9,hl+:#88c0d0,prompt:#a3be8c,pointer:#bf616a)
+    print_header "$MUSIC_CHOICE" "$AMB_CHOICE" "$T_PENDING"
+    ATC_CHOICE=$(printf "%s\n" "${!ATC_STREAMS[@]}" | sort | fzf --prompt="$T_PR_ATC" --border=rounded --height=40% --color=bg+:#2e3440,fg+:#d8dee9,hl+:#88c0d0,prompt:#a3be8c,pointer:#bf616a)
     [[ -z "$ATC_CHOICE" ]] && break
     ATC_URL="${ATC_STREAMS[$ATC_CHOICE]}"
 
@@ -198,7 +275,6 @@ while true; do
         rm -f "$FIFO_CAVA" "$FILE_CAVA"
         mkfifo "$FIFO_CAVA"
 
-        # Generiere dynamische Cava-Config für hohe FPS & Genauigkeit
         cat <<EOF > "$CONF_CAVA"
 [general]
 framerate = 40
@@ -215,11 +291,9 @@ ascii_max_range = 7
 bar_delimiter = 59
 EOF
 
-        # Starte Cava unsichtbar im Hintergrund
         cava -p "$CONF_CAVA" >/dev/null 2>&1 &
         PID_CAVA=$!
 
-        # Subshell liest den Cava-Output super schnell ein
         (
             while read -r line; do
                 echo "$line" > "$FILE_CAVA"
@@ -228,22 +302,15 @@ EOF
         PID_READER=$!
     fi
 
-    clear
-    # ASCII Art & Theming
-    echo -e "${C_SEC}           __|__${C_RST}"
-    echo -e "${C_MAIN}  --@--@--(_)--@--@--${C_RST}"
-    echo -e "${C_MAIN}======================================${C_RST}"
-    echo -e " 🎵 ${C_SEC}$MUSIC_CHOICE${C_RST}"
-    echo -e " 🌧️ ${C_SEC}$AMB_CHOICE${C_RST}"
-    echo -e " ✈️  ${C_SEC}$ATC_CHOICE${C_RST}"
-    echo -e "${C_MAIN}======================================${C_RST}"
-    echo -e " \e[1mSTEUERUNG:\e[0m"
-    echo -e " [\e[1;33mW / S\e[0m] Musik lauter/leiser"
-    echo -e " [\e[1;33mE / D\e[0m] Ambience lauter/leiser"
-    echo -e " [\e[1;33m↑ / ↓\e[0m] ATC lauter/leiser"
-    echo -e " [\e[1;35m  F  \e[0m] Musik-VHF-Filter (Radio-Effekt) an/aus"
-    echo -e " [\e[1;31m  M  \e[0m] ATC stumm schalten (Mute)"
-    echo -e " [\e[1;31m  Q  \e[0m] Zurück zum Menü"
+    # Finaler Screen Render mit Steuerung
+    print_header "$MUSIC_CHOICE" "$AMB_CHOICE" "$ATC_CHOICE"
+    echo -e " \e[1m$T_CTRL_TITLE\e[0m"
+    echo -e " [\e[1;33mW / S\e[0m] $T_CTRL_MUSIC"
+    echo -e " [\e[1;33mE / D\e[0m] $T_CTRL_AMB"
+    echo -e " [\e[1;33m↑ / ↓\e[0m] $T_CTRL_ATC"
+    echo -e " [\e[1;35m  F  \e[0m] $T_CTRL_VHF"
+    echo -e " [\e[1;31m  M  \e[0m] $T_CTRL_MUTE"
+    echo -e " [\e[1;31m  Q  \e[0m] $T_CTRL_QUIT"
     echo -e "${C_MAIN}======================================${C_RST}"
     echo "" # Platzhalter für Visualizer
     echo "" # Platzhalter für Status
@@ -260,7 +327,7 @@ EOF
     mpv --no-video --volume=$VOL_ATC --input-ipc-server="$SOCK_ATC" "$ATC_URL" > /dev/null 2>&1 &
     PID_ATC=$!
 
-    # Status-Worker im Hintergrund (Verhindert, dass das Zeichnen laggt!)
+    # Status-Worker im Hintergrund
     echo "STAT_MUSIC='\e[1;33m[LOAD_SPIN]\e[0m'; STAT_ATC='\e[1;33m[LOAD_SPIN]\e[0m'; STAT_AMB='\e[1;33m[LOAD_SPIN]\e[0m'" > "$FILE_STATUS"
     (
         while true; do
@@ -270,7 +337,6 @@ EOF
             if [[ "$AMB_URL" != "NONE" ]]; then
                 s_amb=$(get_status_raw "$SOCK_AMB")
             fi
-            # Schreibe Variablen in Env-Datei für den Haupt-Thread
             cat <<EOF > "$FILE_STATUS"
 STAT_MUSIC="$s_m"
 STAT_ATC="$s_a"
@@ -285,7 +351,6 @@ EOF
     # LIVE-KONTROLLSCHLEIFE (Player Loop)
     # ==========================================
     while true; do
-        # Timeout auf 0.03 reduziert -> ~33 FPS UI Refresh Rate!
         if read -rsn1 -t 0.03 key; then
             case "$key" in
                 $'\x1b') # Pfeiltasten
@@ -346,7 +411,6 @@ EOF
             esac
         fi
 
-        # Zeichnen passiert jetzt ~33 mal pro Sekunde für perfekte Cava-Animation
         draw_ui
     done
 done
